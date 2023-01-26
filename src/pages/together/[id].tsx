@@ -1,7 +1,7 @@
 import LoadingSpinner from "components/LoadingSpinner";
 import axiosClient from "configs/axiosClient";
 import { defaultAvatar } from "constants/global";
-import { doc, getDoc, updateDoc } from "firebase/firestore";
+import { doc, getDoc, onSnapshot, updateDoc } from "firebase/firestore";
 import LayoutPrimary from "layouts/LayoutPrimary";
 import { db } from "libs/firebase-app";
 import CommentList from "modules/CommentList";
@@ -37,6 +37,8 @@ const WatchTogether = () => {
   const [commentValue, setCommentValue] = useState("");
   const [roomInfo, setRoomInfo] = useState<IRoomInfo>();
   const playerRef = useRef<HTMLVideoElement | null>(null);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const [isHost, setIsHost] = useState(currentUser?.uid !== roomInfo?.hostId);
 
   const handleFirstPlay = (e: SyntheticEvent<HTMLVideoElement>) => {
     if (!isFirstPlay) return;
@@ -88,14 +90,24 @@ const WatchTogether = () => {
   };
 
   useEffect(() => {
-    const fetchRoomInfo = async () => {
-      if (!id) return;
-      const roomRef = doc(db, "rooms", id);
-      const docSnap = await getDoc(roomRef);
-      if (!docSnap.exists()) return;
-      setRoomInfo(docSnap.data() as IRoomInfo);
+    if (!videoRef.current || !roomInfo?.currentTime) return;
+    const currentTimeFromDB = roomInfo.currentTime;
+    const currentTimeLocal = videoRef.current.currentTime;
+    if (!currentTimeFromDB || !currentTimeLocal) {
+      return;
+    }
+    const isSame = Math.floor(currentTimeFromDB) === Math.floor(currentTimeLocal);
+    if (!isSame) videoRef.current.currentTime = currentTimeFromDB;
+  }, [roomInfo?.currentTime]);
+
+  useEffect(() => {
+    if (!id) return;
+    const unsub = onSnapshot(doc(db, "rooms", id as string), (doc) => {
+      setRoomInfo(doc.data() as IRoomInfo);
+    });
+    return () => {
+      unsub();
     };
-    fetchRoomInfo();
   }, [id]);
   useEffect(() => {
     const fetchDetailsMovie = async () => {
@@ -114,7 +126,7 @@ const WatchTogether = () => {
       }
     };
     fetchDetailsMovie();
-  }, [roomInfo]);
+  }, [roomInfo?.movieId]);
 
   if (!data || loading) {
     return (
@@ -134,20 +146,55 @@ const WatchTogether = () => {
             )}
           >
             <Player src={data.qualities} subtitles={data.subtitles} playerRef={playerRef}>
-              {(ref, props) => (
-                <ReactHlsPlayer
-                  {...props}
-                  playerRef={ref}
-                  autoPlay={true}
-                  poster={data.coverHorizontalUrl}
-                  onPlay={handlePlay}
-                  onPause={handlePause}
-                  onSeeked={handleTimeUpdate}
-                  onProgress={handleTimeUpdate}
-                  onCanPlay={handleFirstPlay}
-                />
-              )}
+              {(ref, props) => {
+                videoRef.current = ref.current;
+                return (
+                  <ReactHlsPlayer
+                    {...props}
+                    playerRef={ref}
+                    autoPlay={true}
+                    poster={data.coverHorizontalUrl}
+                    onPlay={handlePlay}
+                    onPause={handlePause}
+                    onSeeked={handleTimeUpdate}
+                    onProgress={handleTimeUpdate}
+                    onCanPlay={handleFirstPlay}
+                  />
+                );
+              }}
             </Player>
+            {/* {currentUser?.uid !== roomInfo?.hostId ? (
+              <Player src={data.qualities} subtitles={data.subtitles} playerRef={playerRef}>
+                {(ref, props) => {
+                  videoRef.current = ref;
+                  return (
+                    <ReactHlsPlayer
+                      {...props}
+                      playerRef={ref}
+                      autoPlay={true}
+                      poster={data.coverHorizontalUrl}
+                      onPlay={handlePlay}
+                      onPause={handlePause}
+                      onSeeked={handleTimeUpdate}
+                      onProgress={handleTimeUpdate}
+                      onCanPlay={handleFirstPlay}
+                    />
+                  );
+                }}
+              </Player>
+            ) : (
+              <Player src={data.qualities} subtitles={data.subtitles} playerRef={playerRef}>
+                {(ref, props) => (
+                  <ReactHlsPlayer
+                    {...props}
+                    playerRef={ref}
+                    autoPlay={true}
+                    poster={data.coverHorizontalUrl}
+                    onCanPlay={handleFirstPlay}
+                  />
+                )}
+              </Player>
+            )} */}
             <h1 className={styles.heading}>
               {data.name} {data.currentEpName && `- ${data.currentEpName}`}
             </h1>
