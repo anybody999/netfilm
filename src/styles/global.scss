@@ -1,8 +1,9 @@
 :root {
   --dark: #080f28;
   --purple: #995aff;
-  --dark33: #333;
-  --grayc4: #c4c1ea;
+  --gray33: #333;
+  --purplec4: #c4c1ea;
+  --dark43: #434b5a;
   --gradient-purple: linear-gradient(270deg, #c042ff, #8a3cff);
 }
 html {
@@ -125,4 +126,7 @@ body {
     font-size: 1.75rem;
     color: white;
   }
+}
+.tuby-controls-hidden .tuby-controls .tuby-seek .tuby-seek-bar {
+  display: none;
 }

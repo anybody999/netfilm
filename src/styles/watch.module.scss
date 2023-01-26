@@ -18,6 +18,7 @@
   max-height: 495px;
   overflow-y: auto;
   display: flex;
+  position: relative;
   flex-direction: column;
   gap: 16px;
   @media screen and (max-width: 767.98px) {
@@ -36,5 +37,25 @@
     align-items: flex-start;
     padding-top: 10px;
     padding-bottom: 6px;
+  }
+}
+.notification {
+  font-size: 1.4rem;
+  text-align: center;
+  color: var(--purplec4);
+}
+.form {
+  bottom: 0;
+  left: 0;
+  right: 0;
+  position: absolute;
+  input {
+    color: white;
+    background-color: transparent;
+    border: none;
+    border: 1px solid var(--purple);
+    border-radius: 4px;
+    padding: 8px 16px;
+    width: 100%;
   }
 }
