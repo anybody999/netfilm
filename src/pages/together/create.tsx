@@ -11,7 +11,7 @@ import { addDoc, collection } from "firebase/firestore";
 import useInputChange from "hooks/useInputChange";
 import LayoutPrimary from "layouts/LayoutPrimary";
 import { db } from "libs/firebase-app";
-import SearchTogetherMode from "modules/SearchTogetherMode";
+import SearchMovieTogether from "modules/SearchMovieTogether";
 import styles from "modules/WatchAnthology/watchAnthology.module.scss";
 import { useRouter } from "next/router";
 import { FormEvent, useEffect, useState } from "react";
@@ -120,7 +120,7 @@ const WatchTogetherCreate = () => {
             </form>
           </div>
         ) : (
-          <SearchTogetherMode setIsModeAdd={setIsModeAdd} setValues={setValues} />
+          <SearchMovieTogether setIsModeAdd={setIsModeAdd} setValues={setValues} />
         )}
       </div>
     </LayoutPrimary>

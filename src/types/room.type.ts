@@ -1,3 +1,5 @@
+import { Timestamp } from "firebase/firestore";
+
 export interface IRoomInfo {
   id: string;
   categoryId: string;
@@ -8,6 +10,7 @@ export interface IRoomInfo {
   thumbnail: string;
   currentTime: number;
   isPlaying: boolean;
+  createdAt: number;
   messages: {
     id: string;
     userId: string;

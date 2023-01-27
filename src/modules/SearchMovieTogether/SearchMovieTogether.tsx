@@ -12,12 +12,12 @@ import { ChangeEvent, Dispatch, FormEvent, SetStateAction, useState } from "reac
 import { IMovieSearch, IRoomInfo } from "types";
 import classNames from "utils/classNames";
 
-interface SearchTogetherModeProps {
+interface SearchMovieTogetherProps {
   setIsModeAdd: Dispatch<SetStateAction<boolean>>;
   setValues: Dispatch<SetStateAction<Omit<IRoomInfo, "id"> | null>>;
 }
 
-const SearchTogetherMode = ({ setIsModeAdd, setValues }: SearchTogetherModeProps) => {
+const SearchMovieTogether = ({ setIsModeAdd, setValues }: SearchMovieTogetherProps) => {
   const [keyword, setKeyword] = useState("");
   const [loading, setLoading] = useState(false);
   const [movies, setMovies] = useState<IMovieSearch[]>([]);
@@ -32,7 +32,8 @@ const SearchTogetherMode = ({ setIsModeAdd, setValues }: SearchTogetherModeProps
       messages: [],
       movieId: movie.id,
       thumbnail: movie.coverHorizontalUrl,
-      title: movie.name
+      title: movie.name,
+      createdAt: Date.now()
     });
   };
   const handleChangeKeyword = async (e: ChangeEvent<HTMLInputElement>) => {
@@ -97,4 +98,4 @@ const SearchTogetherMode = ({ setIsModeAdd, setValues }: SearchTogetherModeProps
   );
 };
 
-export default SearchTogetherMode;
+export default SearchMovieTogether;

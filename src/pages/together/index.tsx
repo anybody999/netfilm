@@ -2,7 +2,7 @@ import { Image } from "components/Image";
 import WrapLink from "components/WrapLink";
 import { resizeImageLoklok } from "constants/global";
 import { PATH } from "constants/path";
-import { collection, onSnapshot } from "firebase/firestore";
+import { collection, deleteDoc, doc, onSnapshot } from "firebase/firestore";
 import LayoutPrimary from "layouts/LayoutPrimary";
 import { db } from "libs/firebase-app";
 import MovieTitle from "modules/MovieTitle";
@@ -16,9 +16,14 @@ const RoomTogetherPage = () => {
     const colRef = collection(db, "rooms");
     const unsubscribe = onSnapshot(colRef, (querySnapshot) => {
       const roomsData: IRoomInfo[] = [];
-      querySnapshot.forEach((doc) => {
-        const room = { ...doc.data(), id: doc.id };
-        roomsData.push(room as IRoomInfo);
+      querySnapshot.forEach(async (document) => {
+        const TIME_AUTO_DELETE = 60 * 60 * 5; // 5 hours
+        if (document.data().createdAt + TIME_AUTO_DELETE < Date.now()) {
+          await deleteDoc(doc(db, "rooms", document.id));
+        } else {
+          const room = { ...document.data(), id: document.id };
+          roomsData.push(room as IRoomInfo);
+        }
       });
       setRooms(roomsData);
     });
