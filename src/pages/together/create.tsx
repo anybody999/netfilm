@@ -1,116 +1,130 @@
-import { IMovieSearch } from "types";
-import { IconSearch } from "components/Icons";
+import FormGroup from "components/FormGroup";
+import { IconPlay } from "components/Icons";
+import { Image } from "components/Image";
+import Input from "components/Input";
+import Label from "components/Label";
 import Meta from "components/Meta";
 import axiosClient from "configs/axiosClient";
+import { resizeImageLoklok } from "constants/global";
 import { PATH } from "constants/path";
-import useClickOutside from "hooks/useClickOutside";
-import { useDebounce } from "hooks/useDebounce";
+import { addDoc, collection } from "firebase/firestore";
+import useInputChange from "hooks/useInputChange";
 import LayoutPrimary from "layouts/LayoutPrimary";
-import MovieCard from "modules/MovieCard";
-import MovieList from "modules/MovieList";
-import { MovieListSkeleton } from "modules/MovieSkeleton";
-import styles from "modules/SearchBox/searchBox.module.scss";
-import { GetServerSidePropsContext } from "next";
-import { ChangeEvent, FormEvent, useEffect, useRef, useState } from "react";
-import classNames from "utils/classNames";
+import { db } from "libs/firebase-app";
+import SearchTogetherMode from "modules/SearchTogetherMode";
+import styles from "modules/WatchAnthology/watchAnthology.module.scss";
+import { useRouter } from "next/router";
+import { FormEvent, useEffect, useState } from "react";
+import { toast } from "react-hot-toast";
+import { useAppSelector } from "store/global-store";
+import { IMovieDetails, IRoomInfo } from "types";
 
-interface WatchTogetherCreateProps {
-  results: IMovieSearch[];
-}
-
-// isShow
-// roomId
-// hostId
-
-const WatchTogetherCreate = ({ results }: WatchTogetherCreateProps) => {
-  const [keyword, setKeyword] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [movies, setMovies] = useState<IMovieSearch[]>(results);
-  const [suggests, setSuggests] = useState<string[]>([]);
-  const debouncedKeyword = useDebounce(keyword, 500);
-  const searchResultsRef = useRef(null);
-  useClickOutside(searchResultsRef, () => setSuggests([]));
-  const fetchSuggestsKeyword = async () => {
-    const { data } = await axiosClient(`/api/search/suggest?keyword=${keyword}`);
-    setSuggests(data);
-  };
-  const handleChangeKeyword = async (e: ChangeEvent<HTMLInputElement>) => {
-    setKeyword(e.target.value);
-  };
-  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+const WatchTogetherCreate = () => {
+  const router = useRouter();
+  const [isModeAdd, setIsModeAdd] = useState(false);
+  const { currentUser } = useAppSelector((state) => state.auth);
+  const [movieDetails, setMovieDetails] = useState<IMovieDetails>();
+  const [values, setValues] = useState<Omit<IRoomInfo, "id"> | null>(null);
+  const { onChange } = useInputChange(values, setValues);
+  const handleAddNewRoom = async (e: FormEvent) => {
     e.preventDefault();
+    if (!currentUser) {
+      toast.error("Please sign in!");
+      return;
+    }
+    if (!values?.title) {
+      toast.error("Please input title room!");
+      return;
+    }
     try {
-      setLoading(true);
-      const { data } = await axiosClient.get("/api/search", { params: { keyword } });
-      setMovies(data.results);
-    } catch (error) {
-      console.log(error);
+      const colRef = collection(db, "rooms");
+      const doc = await addDoc(colRef, values);
+      console.log("doc: ", doc.id);
+      router.push(`${PATH.together}/${doc.id}`);
+      toast.success("Add new room together successfully!");
+    } catch (error: any) {
+      console.log("error: ", error);
+      toast.error(error?.message);
     } finally {
-      setKeyword("");
-      setLoading(false);
     }
   };
+
   useEffect(() => {
-    fetchSuggestsKeyword();
-  }, [debouncedKeyword]);
+    const fetchDetailsMovie = async () => {
+      if (!values?.movieId || !values.categoryId) return;
+      try {
+        const { data } = await axiosClient.get(`/api/episode`, {
+          params: { id: values?.movieId, category: values?.categoryId }
+        });
+        setMovieDetails(data);
+      } catch (error) {
+        console.log("error: ", error);
+      }
+    };
+    fetchDetailsMovie();
+  }, [values?.movieId, values?.categoryId]);
+
   return (
     <LayoutPrimary>
       <Meta title="Watch together create - NetFilm" />
       <div className="container">
-        <div className={classNames(styles.searchBox)}>
-          <form className={styles.searchBar} onSubmit={handleSubmit}>
-            <input
-              type="text"
-              value={keyword}
-              className={styles.searchInput}
-              placeholder="Search movie..."
-              onChange={handleChangeKeyword}
-            />
-            <button type="submit" className={styles.searchButton}>
-              <IconSearch />
-            </button>
-          </form>
-          <ul className={classNames(styles.searchResults, "scrollbar")} ref={searchResultsRef}>
-            {suggests.map((suggest) => {
-              const removeTag = suggest.replaceAll("<em>", "").replaceAll("</em>", "");
-              const name = encodeURIComponent(removeTag);
-              return (
-                <li
-                  key={name}
-                  dangerouslySetInnerHTML={{ __html: suggest }}
-                  className={styles.suggest}
-                ></li>
-              );
-            })}
-          </ul>
-        </div>
-        {loading && <MovieListSkeleton count={12} />}
-        {!loading && (
-          <MovieList>
-            {movies.map((movie) => (
-              <MovieCard
-                id={movie.id}
-                key={movie.id}
-                title={movie.name}
-                domainType={movie.domainType}
-                poster={movie.coverVerticalUrl}
-                // href={`${PATH.togetherCreate}/${movie.id}`}
+        {isModeAdd ? (
+          <div className="together-add">
+            <div className="together-information">
+              <h1 className="together-heading">Movie Information</h1>
+              <Image
+                src={resizeImageLoklok(values?.thumbnail as string, 500, 282)}
+                alt={movieDetails?.name}
+                className="together-thumbnail"
               />
-            ))}
-          </MovieList>
+              <h3 className="together-title">{movieDetails?.name}</h3>
+              <p className="together-desc">{movieDetails?.introduction}</p>
+            </div>
+            <form onSubmit={handleAddNewRoom}>
+              <h1 className="together-heading">Room Settings</h1>
+              <FormGroup>
+                <Label htmlFor="title">Title room (optional)</Label>
+                <Input
+                  name="title"
+                  placeholder="Input title room"
+                  defaultValue={"Watch " + values?.title + " with me"}
+                  onChange={onChange}
+                />
+              </FormGroup>
+              {Number(movieDetails?.episodeVo?.length) > 1 && (
+                <>
+                  <FormGroup>
+                    <Label>Episode (default episode 1)</Label>
+                  </FormGroup>
+                  <div className={styles.anthology}>
+                    {movieDetails?.episodeVo.map(({ seriesNo, id }) => {
+                      const active = id === Number(values?.episodeId);
+                      const handleClickEpisode = (episode: number) => {
+                        if (!values) return;
+                        setValues({ ...values, episodeId: episode.toString() });
+                      };
+                      return (
+                        <div key={id}>
+                          <button type="button" onClick={() => handleClickEpisode(id)}>
+                            {active ? <IconPlay fill="#8a3cff" /> : seriesNo}
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </>
+              )}
+              <button type="submit" className="together-submit" style={{ marginTop: "20px" }}>
+                Add New Room
+              </button>
+            </form>
+          </div>
+        ) : (
+          <SearchTogetherMode setIsModeAdd={setIsModeAdd} setValues={setValues} />
         )}
       </div>
     </LayoutPrimary>
   );
-};
-
-export const getServerSideProps = async ({ query }: GetServerSidePropsContext) => {
-  const { data } = await axiosClient.get("/api/search", { params: { keyword: "batman" } });
-  return {
-    props: {
-      results: data.results
-    }
-  };
 };
 
 export default WatchTogetherCreate;

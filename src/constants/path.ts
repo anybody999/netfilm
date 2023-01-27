@@ -2,6 +2,7 @@ export const PATH = {
   home: "/",
   watch: "/watch",
   search: "/search",
+  together: "/together",
   togetherCreate: "/together/create",
   detail: "/detail",
   profile: "/profile",

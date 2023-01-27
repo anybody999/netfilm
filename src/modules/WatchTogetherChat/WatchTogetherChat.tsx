@@ -3,7 +3,7 @@ import { doc, updateDoc } from "firebase/firestore";
 import { db } from "libs/firebase-app";
 import Message from "modules/Message";
 import { useRouter } from "next/router";
-import { FormEvent, useRef, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import { useAppSelector } from "store/global-store";
 import styles from "styles/watch.module.scss";
@@ -39,8 +39,6 @@ const WatchTogetherChat = ({ roomInfo }: WatchTogetherChatProps) => {
         content: commentValue
       });
       await updateDoc(colRef, { messages: cloneRoomInfo?.messages });
-      if (!refChat.current) return;
-      refChat.current.scrollTop = refChat.current.scrollHeight;
     } catch (error: any) {
       toast.error(error?.message);
       console.log("error: ", error);
@@ -48,6 +46,11 @@ const WatchTogetherChat = ({ roomInfo }: WatchTogetherChatProps) => {
       setCommentValue("");
     }
   };
+
+  useEffect(() => {
+    if (!refChat.current) return;
+    refChat.current.scrollTop = refChat.current.scrollHeight;
+  }, [roomInfo?.messages?.length]);
 
   return (
     <div className={styles.layoutSidebar}>
