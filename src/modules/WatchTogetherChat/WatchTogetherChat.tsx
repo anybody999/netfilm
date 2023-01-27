@@ -7,7 +7,7 @@ import { FormEvent, useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import { useAppSelector } from "store/global-store";
 import styles from "styles/watch.module.scss";
-import { IRoomInfo } from "types";
+import { IMessage, IRoomInfo } from "types";
 import classNames from "utils/classNames";
 import { v4 as uuidv4 } from "uuid";
 
@@ -54,17 +54,14 @@ const WatchTogetherChat = ({ roomInfo }: WatchTogetherChatProps) => {
 
   return (
     <div className={styles.layoutSidebar}>
-      <span className={styles.notification}>
-        <b>Thuan Bach</b> has joined the room
-      </span>
       <div className={classNames(styles.content, "scrollbar")} ref={refChat}>
-        {roomInfo?.messages.map((message: any) => (
+        {roomInfo?.messages.map((message: IMessage) => (
           <Message
             key={message.id}
             isMe={currentUser?.uid === message.userId}
             username={message.fullname}
             content={message.content}
-            avatar={defaultAvatar}
+            avatar={message.avatar || defaultAvatar}
           />
         ))}
       </div>

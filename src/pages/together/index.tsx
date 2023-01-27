@@ -17,7 +17,7 @@ const RoomTogetherPage = () => {
     const unsubscribe = onSnapshot(colRef, (querySnapshot) => {
       const roomsData: IRoomInfo[] = [];
       querySnapshot.forEach(async (document) => {
-        const TIME_AUTO_DELETE = 60 * 60 * 5; // 5 hours
+        const TIME_AUTO_DELETE = 60 * 60 * 5 * 1000; // 5 hours
         if (document.data().createdAt + TIME_AUTO_DELETE < Date.now()) {
           await deleteDoc(doc(db, "rooms", document.id));
         } else {

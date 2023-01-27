@@ -1,4 +1,10 @@
-import { Timestamp } from "firebase/firestore";
+export interface IMessage {
+  id: string;
+  userId: string;
+  fullname: string;
+  avatar: string;
+  content: string;
+}
 
 export interface IRoomInfo {
   id: string;
@@ -9,13 +15,6 @@ export interface IRoomInfo {
   title: string;
   thumbnail: string;
   currentTime: number;
-  isPlaying: boolean;
   createdAt: number;
-  messages: {
-    id: string;
-    userId: string;
-    fullname: string;
-    avatar: string;
-    content: string;
-  }[];
+  messages: IMessage[];
 }

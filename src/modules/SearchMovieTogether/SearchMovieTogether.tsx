@@ -28,7 +28,6 @@ const SearchMovieTogether = ({ setIsModeAdd, setValues }: SearchMovieTogetherPro
       currentTime: 0,
       episodeId: "",
       hostId: auth.currentUser?.uid as string,
-      isPlaying: false,
       messages: [],
       movieId: movie.id,
       thumbnail: movie.coverHorizontalUrl,

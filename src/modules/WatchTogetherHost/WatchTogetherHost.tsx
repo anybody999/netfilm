@@ -27,14 +27,6 @@ const WatchTogetherHost = ({ roomInfo, data }: WatchTogetherHostProps) => {
     node.currentTime = roomInfo?.currentTime || 0;
     setIsFirstPlay(false);
   };
-  const handlePlay = async () => {
-    const roomRef = doc(db, "rooms", id);
-    await updateDoc(roomRef, { isPlaying: true });
-  };
-  const handlePause = async () => {
-    const roomRef = doc(db, "rooms", id);
-    await updateDoc(roomRef, { isPlaying: false });
-  };
   const handleTimeUpdate = async (e: SyntheticEvent<HTMLVideoElement>) => {
     const node = e.target as HTMLVideoElement;
     const colRef = doc(db, "rooms", id);
@@ -62,8 +54,6 @@ const WatchTogetherHost = ({ roomInfo, data }: WatchTogetherHostProps) => {
             playerRef={ref}
             autoPlay={true}
             poster={data.coverHorizontalUrl}
-            onPlay={handlePlay}
-            onPause={handlePause}
             onSeeked={handleTimeUpdate}
             onProgress={handleTimeUpdate}
             onCanPlay={handleFirstPlay}
