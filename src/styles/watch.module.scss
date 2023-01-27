@@ -15,14 +15,11 @@
 }
 .layoutSidebar {
   flex: 1;
-  max-height: 495px;
-  overflow-y: auto;
-  display: flex;
   position: relative;
-  flex-direction: column;
-  gap: 16px;
+  overflow-y: auto;
+  max-height: 495px;
   @media screen and (max-width: 767.98px) {
-    max-height: 280px;
+    max-height: 340px;
   }
 }
 .meta {
@@ -39,9 +36,23 @@
     padding-bottom: 6px;
   }
 }
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  overflow-y: auto;
+  max-height: 440px;
+  padding-bottom: 40px;
+  padding-right: 10px;
+  @media screen and (max-width: 767.98px) {
+    max-height: 280px;
+  }
+}
 .notification {
   font-size: 1.4rem;
   text-align: center;
+  display: block;
+  margin-bottom: 16px;
   color: var(--purplec4);
 }
 .form {
@@ -49,6 +60,7 @@
   left: 0;
   right: 0;
   position: absolute;
+  background-color: var(--dark);
   input {
     color: white;
     background-color: transparent;

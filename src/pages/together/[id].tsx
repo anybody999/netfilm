@@ -1,11 +1,9 @@
 import LoadingSpinner from "components/LoadingSpinner";
 import axiosClient from "configs/axiosClient";
-import { defaultAvatar } from "constants/global";
-import { doc, onSnapshot, updateDoc } from "firebase/firestore";
+import { doc, onSnapshot } from "firebase/firestore";
 import LayoutPrimary from "layouts/LayoutPrimary";
 import { db } from "libs/firebase-app";
 import CommentList from "modules/CommentList";
-import Message from "modules/Message";
 import MovieCard from "modules/MovieCard";
 import MovieList from "modules/MovieList";
 import WatchActions from "modules/WatchActions";
@@ -13,16 +11,15 @@ import WatchCategory from "modules/WatchCategory";
 import WatchMeta from "modules/WatchMeta";
 import WatchStar from "modules/WatchStar";
 import WatchSummary from "modules/WatchSummary";
+import WatchTogetherChat from "modules/WatchTogetherChat";
 import WatchTogetherGuest from "modules/WatchTogetherGuest";
 import WatchTogetherHost from "modules/WatchTogetherHost";
 import { useRouter } from "next/router";
-import { FormEvent, memo, useEffect, useState } from "react";
-import toast from "react-hot-toast";
+import { memo, useEffect, useState } from "react";
 import { useAppSelector } from "store/global-store";
 import styles from "styles/watch.module.scss";
 import { IEpisode, IRoomInfo } from "types";
 import classNames from "utils/classNames";
-import { v4 as uuidv4 } from "uuid";
 
 const WatchTogether = () => {
   const router = useRouter();
@@ -30,33 +27,8 @@ const WatchTogether = () => {
   const { currentUser } = useAppSelector((state) => state.auth);
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<IEpisode>();
-  const [commentValue, setCommentValue] = useState("");
   const [roomInfo, setRoomInfo] = useState<IRoomInfo>();
   const isHostRoom = currentUser?.uid === roomInfo?.hostId;
-
-  const handleAddComment = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (!currentUser) {
-      toast.error("Please sign in!");
-      return;
-    }
-    try {
-      const colRef = doc(db, "rooms", id as string);
-      const cloneRoomInfo = roomInfo;
-      cloneRoomInfo?.messages.push({
-        id: uuidv4(),
-        userId: currentUser.uid,
-        avatar: currentUser.photoURL || defaultAvatar,
-        fullname: currentUser.displayName,
-        content: commentValue
-      });
-      await updateDoc(colRef, { messages: cloneRoomInfo?.messages });
-    } catch (error) {
-      console.log("error: ", error);
-    } finally {
-      setCommentValue("");
-    }
-  };
 
   useEffect(() => {
     if (!id) return;
@@ -125,31 +97,7 @@ const WatchTogether = () => {
             <WatchSummary introduction={data.introduction} />
             <WatchStar starList={data.starList} />
           </div>
-          <div className={classNames(styles.layoutSidebar, "scrollbar")}>
-            <span className={styles.notification}>
-              <b>Thuan Bach</b> has joined the room
-            </span>
-            {roomInfo?.messages.map((message: any) => (
-              <Message
-                key={message.id}
-                isMe={currentUser?.uid === message.userId}
-                username={message.fullname}
-                content={message.content}
-                avatar={defaultAvatar}
-              />
-            ))}
-            <form className={styles.form} onSubmit={handleAddComment}>
-              <input
-                type="text"
-                placeholder="Write comment"
-                value={commentValue}
-                onKeyDown={(e) => e.stopPropagation()}
-                onKeyUp={(e) => e.stopPropagation()}
-                onKeyPress={(e) => e.stopPropagation()}
-                onChange={(e) => setCommentValue(e.target.value)}
-              />
-            </form>
-          </div>
+          <WatchTogetherChat roomInfo={roomInfo as IRoomInfo} />
         </div>
         <div className={styles.layoutMain}>
           <CommentList />
