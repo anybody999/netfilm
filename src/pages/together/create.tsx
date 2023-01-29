@@ -1,3 +1,4 @@
+import { ProtectedRoute } from "components/Authentication";
 import FormGroup from "components/FormGroup";
 import { IconPlay } from "components/Icons";
 import { Image } from "components/Image";
@@ -65,65 +66,67 @@ const WatchTogetherCreate = () => {
   }, [values?.movieId, values?.categoryId]);
 
   return (
-    <LayoutPrimary>
-      <Meta title="Watch together create - NetFilm" />
-      <div className="container">
-        {isModeAdd ? (
-          <div className="together-add">
-            <div className="together-information">
-              <h1 className="together-heading">Movie Information</h1>
-              <Image
-                src={resizeImageLoklok(values?.thumbnail as string, 500, 282)}
-                alt={movieDetails?.name}
-                className="together-thumbnail"
-              />
-              <h3 className="together-title">{movieDetails?.name}</h3>
-              <p className="together-desc">{movieDetails?.introduction}</p>
-            </div>
-            <form onSubmit={handleAddNewRoom}>
-              <h1 className="together-heading">Room Settings</h1>
-              <FormGroup>
-                <Label htmlFor="title">Title room (optional)</Label>
-                <Input
-                  name="title"
-                  placeholder="Input title room"
-                  defaultValue={"Watch " + values?.title + " with me"}
-                  onChange={onChange}
+    <ProtectedRoute>
+      <LayoutPrimary>
+        <Meta title="Watch together create - NetFilm" />
+        <div className="container">
+          {isModeAdd ? (
+            <div className="together-add">
+              <div className="together-information">
+                <h1 className="together-heading">Movie Information</h1>
+                <Image
+                  src={resizeImageLoklok(values?.thumbnail as string, 500, 282)}
+                  alt={movieDetails?.name}
+                  className="together-thumbnail"
                 />
-              </FormGroup>
-              {Number(movieDetails?.episodeVo?.length) > 1 && (
-                <>
-                  <FormGroup>
-                    <Label>Episode (default episode 1)</Label>
-                  </FormGroup>
-                  <div className={styles.anthology}>
-                    {movieDetails?.episodeVo.map(({ seriesNo, id }) => {
-                      const active = id === Number(values?.episodeId);
-                      const handleClickEpisode = (episode: number) => {
-                        if (!values) return;
-                        setValues({ ...values, episodeId: episode.toString() });
-                      };
-                      return (
-                        <div key={id}>
-                          <button type="button" onClick={() => handleClickEpisode(id)}>
-                            {active ? <IconPlay fill="#8a3cff" /> : seriesNo}
-                          </button>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </>
-              )}
-              <button type="submit" className="together-submit" style={{ marginTop: "20px" }}>
-                Add New Room
-              </button>
-            </form>
-          </div>
-        ) : (
-          <SearchMovieTogether setIsModeAdd={setIsModeAdd} setValues={setValues} />
-        )}
-      </div>
-    </LayoutPrimary>
+                <h3 className="together-title">{movieDetails?.name}</h3>
+                <p className="together-desc">{movieDetails?.introduction}</p>
+              </div>
+              <form onSubmit={handleAddNewRoom}>
+                <h1 className="together-heading">Room Settings</h1>
+                <FormGroup>
+                  <Label htmlFor="title">Title room (optional)</Label>
+                  <Input
+                    name="title"
+                    placeholder="Input title room"
+                    defaultValue={"Watch " + values?.title + " with me"}
+                    onChange={onChange}
+                  />
+                </FormGroup>
+                {Number(movieDetails?.episodeVo?.length) > 1 && (
+                  <>
+                    <FormGroup>
+                      <Label>Episode (default episode 1)</Label>
+                    </FormGroup>
+                    <div className={styles.anthology}>
+                      {movieDetails?.episodeVo.map(({ seriesNo, id }) => {
+                        const active = id === Number(values?.episodeId);
+                        const handleClickEpisode = (episode: number) => {
+                          if (!values) return;
+                          setValues({ ...values, episodeId: episode.toString() });
+                        };
+                        return (
+                          <div key={id}>
+                            <button type="button" onClick={() => handleClickEpisode(id)}>
+                              {active ? <IconPlay fill="#8a3cff" /> : seriesNo}
+                            </button>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </>
+                )}
+                <button type="submit" className="together-submit" style={{ marginTop: "20px" }}>
+                  Add New Room
+                </button>
+              </form>
+            </div>
+          ) : (
+            <SearchMovieTogether setIsModeAdd={setIsModeAdd} setValues={setValues} />
+          )}
+        </div>
+      </LayoutPrimary>
+    </ProtectedRoute>
   );
 };
 

@@ -1,3 +1,4 @@
+import { ProtectedRoute } from "components/Authentication";
 import LoadingSpinner from "components/LoadingSpinner";
 import axiosClient from "configs/axiosClient";
 import { doc, onSnapshot } from "firebase/firestore";
@@ -66,55 +67,57 @@ const WatchTogether = () => {
     );
   }
   return (
-    <LayoutPrimary>
-      <div className="container">
-        <div className={styles.layout}>
-          <div className={classNames(styles.layoutMain, !isHostRoom && "tuby-controls-hidden")}>
-            {isHostRoom ? (
-              <WatchTogetherHost data={data} roomInfo={roomInfo as IRoomInfo} />
-            ) : (
-              <WatchTogetherGuest data={data} roomInfo={roomInfo as IRoomInfo} />
-            )}
-            <h1 className={styles.heading}>
-              {data.name} {data.currentEpName && `- ${data.currentEpName}`}
-            </h1>
-            <div className={styles.meta}>
-              <WatchMeta
-                areaList={data.areaList}
-                currentEpisode={data.currentEpisode}
-                episodeCount={data.episodeCount}
-                year={data.year}
-                score={data.score}
-              />
-              <WatchActions
-                id={data.id}
-                title={data.name}
-                domainType={data.category}
-                poster={data.coverVerticalUrl}
-              />
+    <ProtectedRoute>
+      <LayoutPrimary>
+        <div className="container">
+          <div className={styles.layout}>
+            <div className={classNames(styles.layoutMain, !isHostRoom && "tuby-controls-hidden")}>
+              {isHostRoom ? (
+                <WatchTogetherHost data={data} roomInfo={roomInfo as IRoomInfo} />
+              ) : (
+                <WatchTogetherGuest data={data} roomInfo={roomInfo as IRoomInfo} />
+              )}
+              <h1 className={styles.heading}>
+                {data.name} {data.currentEpName && `- ${data.currentEpName}`}
+              </h1>
+              <div className={styles.meta}>
+                <WatchMeta
+                  areaList={data.areaList}
+                  currentEpisode={data.currentEpisode}
+                  episodeCount={data.episodeCount}
+                  year={data.year}
+                  score={data.score}
+                />
+                <WatchActions
+                  id={data.id}
+                  title={data.name}
+                  domainType={data.category}
+                  poster={data.coverVerticalUrl}
+                />
+              </div>
+              <WatchCategory categories={data.tagList} />
+              <WatchSummary introduction={data.introduction} />
+              <WatchStar starList={data.starList} />
             </div>
-            <WatchCategory categories={data.tagList} />
-            <WatchSummary introduction={data.introduction} />
-            <WatchStar starList={data.starList} />
+            <WatchTogetherChat roomInfo={roomInfo as IRoomInfo} />
           </div>
-          <WatchTogetherChat roomInfo={roomInfo as IRoomInfo} />
+          <div className={styles.layoutMain}>
+            <CommentList />
+          </div>
+          <MovieList heading="You may like">
+            {data.likeList.map((movie: any) => (
+              <MovieCard
+                key={movie.id}
+                id={movie.id}
+                title={movie.name}
+                poster={movie.coverVerticalUrl}
+                domainType={movie.category}
+              />
+            ))}
+          </MovieList>
         </div>
-        <div className={styles.layoutMain}>
-          <CommentList />
-        </div>
-        <MovieList heading="You may like">
-          {data.likeList.map((movie: any) => (
-            <MovieCard
-              key={movie.id}
-              id={movie.id}
-              title={movie.name}
-              poster={movie.coverVerticalUrl}
-              domainType={movie.category}
-            />
-          ))}
-        </MovieList>
-      </div>
-    </LayoutPrimary>
+      </LayoutPrimary>
+    </ProtectedRoute>
   );
 };
 
